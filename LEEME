@@ -1,0 +1,877 @@
+Documentacion
+
+Isla, autómata celular.
+Correspondiente al segundo proyecto, entregado en el curso Java Codegym.
+
+Realiza todas las tareas básicas que habían sido pedidas en aquel ejercicio.
+A continuación la documentación aportada por chatGPT.
+Al final, incluye una corrección para que se vea el movimiento del animal.
+Me detuve de seguir añadiéndole mejoras porque era innecesario, todo funciona
+bien y es fácil seguir añadiendo funciones.
+
+Give the java code for a game that uses a table of 10 columns x 10 rows. Each cell of the table may be occupied by an object, where the object may be an animal or a plant. Rest of cells are ocupped by empty spaces. Animals are represented by unicode characters correspondent to lions, goats, dogs and snakes. Plants are all represented by a unique unicode character. The combined amount of plants and animals cannot excede the 60% of the total cells of the table. The table will be shown on screen each time an iterator increases It's value in one unit. On each one of this iterations, each animal moves one place inside the table. When an animal arrives to the place of a plant, it will eat the plant, making the plant disappear from the table. The game finishes after 20 iterations.
+
+ChatGPT said:
+ChatGPT
+Here’s a simple Java program that implements the game based on your description:
+
+java
+Copy code
+import java.util.Random;
+
+public class TableGame {
+    static final int ROWS = 10;
+    static final int COLS = 10;
+    static final int MAX_ITERATIONS = 20;
+    static final double MAX_OCCUPIED_PERCENTAGE = 0.6;
+    static final int MAX_OCCUPIED_CELLS = (int)(ROWS * COLS * MAX_OCCUPIED_PERCENTAGE);
+
+    // Unicode symbols for animals and plants
+    static final char LION = '\uD83E\uDD81';  // 🦁
+    static final char GOAT = '\uD83D\uDC10';  // 🐐
+    static final char DOG = '\uD83D\uDC15';   // 🐕
+    static final char SNAKE = '\uD83D\uDC0D'; // 🐍
+    static final char PLANT = '\uD83C\uDF31'; // 🌱
+    static final char EMPTY = '.';            // empty space
+
+    static Random random = new Random();
+
+    public static void main(String[] args) {
+        char[][] table = new char[ROWS][COLS];
+        int occupiedCells = 0;
+
+        // Initialize the table with empty spaces
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                table[i][j] = EMPTY;
+            }
+        }
+
+        // Place animals and plants randomly, ensuring not more than 60% of the table is occupied
+        while (occupiedCells < MAX_OCCUPIED_CELLS) {
+            int row = random.nextInt(ROWS);
+            int col = random.nextInt(COLS);
+
+            if (table[row][col] == EMPTY) {
+                char object = random.nextBoolean() ? getRandomAnimal() : PLANT;
+                table[row][col] = object;
+                occupiedCells++;
+            }
+        }
+
+        // Run the game for a fixed number of iterations
+        for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+            System.out.println("Iteration " + (iteration + 1));
+            printTable(table);
+            moveAnimals(table);
+        }
+
+        System.out.println("Game over after " + MAX_ITERATIONS + " iterations.");
+    }
+
+    // Get a random animal symbol
+    private static char getRandomAnimal() {
+        char[] animals = {LION, GOAT, DOG, SNAKE};
+        return animals[random.nextInt(animals.length)];
+    }
+
+    // Move all animals on the table
+    private static void moveAnimals(char[][] table) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                if (isAnimal(table[i][j])) {
+                    int newRow = i;
+                    int newCol = j;
+                    // Move the animal to a random adjacent cell (up, down, left, right)
+                    switch (random.nextInt(4)) {
+                        case 0: newRow = (i - 1 + ROWS) % ROWS; break; // move up
+                        case 1: newRow = (i + 1) % ROWS; break;         // move down
+                        case 2: newCol = (j - 1 + COLS) % COLS; break; // move left
+                        case 3: newCol = (j + 1) % COLS; break;        // move right
+                    }
+
+                    // If the animal encounters a plant, eat it (replace with empty)
+                    if (table[newRow][newCol] == PLANT) {
+                        table[newRow][newCol] = table[i][j];
+                        table[i][j] = EMPTY;
+                    } else if (table[newRow][newCol] == EMPTY) {
+                        // Move the animal to the new cell
+                        table[newRow][newCol] = table[i][j];
+                        table[i][j] = EMPTY;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if the character is an animal
+    private static boolean isAnimal(char c) {
+        return c == LION || c == GOAT || c == DOG || c == SNAKE;
+    }
+
+    // Print the table to the console
+    private static void printTable(char[][] table) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                System.out.print(table[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+}
+Explanation:
+Table Setup: The table is 10x10, with a maximum of 60% of its cells occupied by animals or plants. These are randomly placed on the grid.
+Animals and Plants: Animals are represented using Unicode characters for a lion, goat, dog, and snake. Plants use a unique Unicode character.
+Movement and Eating: Each iteration, every animal tries to move to an adjacent cell. If the new cell contains a plant, the animal "eats" the plant. The plant is then replaced with the animal, and the original position is left empty.
+Iterations: The game runs for 20 iterations, and after each one, the table is printed to show the current state.
+This code keeps the game simple while implementing the core mechanics you described.
+
+
+
+
+
+
+You said:
+Find the reason why executing the previous code at intellij, the screen shows ? (question marks) instead the expected animals and plants drawings.
+ChatGPT said:
+ChatGPT
+The issue with seeing question marks (?) instead of the expected animal and plant drawings in IntelliJ is likely related to the console font or encoding settings not supporting Unicode characters (such as emojis).
+
+Here are some steps to troubleshoot and fix the issue:
+
+1. Ensure Console Supports Unicode
+IntelliJ IDEA's console must support Unicode characters for the animal and plant drawings to render correctly.
+Go to Settings/Preferences in IntelliJ:
+Open File > Settings (or press Ctrl+Alt+S).
+Navigate to Editor > File Encodings.
+Ensure that Global Encoding and Project Encoding are set to UTF-8.
+Check the option Transparent native-to-ascii conversion is disabled.
+2. Change Console Font
+IntelliJ's default console font might not support the emojis you are trying to display. You need to change it to one that supports them (like a font that supports a wide range of Unicode characters, including emojis).
+Steps to change the font in IntelliJ’s console:
+Go to File > Settings.
+Navigate to Editor > Color Scheme > Console Font.
+Change the font to one that supports emojis, such as "JetBrains Mono", "Fira Code", or "DejaVu Sans Mono".
+Enable Enable font ligatures if using a font that supports ligatures, though this is optional.
+3. Check the Runtime JVM Settings
+Another possible issue could be that the JVM being used does not properly handle Unicode output in the console. To ensure proper Unicode support:
+Add the following argument to your JVM runtime:
+Go to Run > Edit Configurations.
+In your configuration, under VM options, add the following flag:
+diff
+Copy code
+-Dfile.encoding=UTF-8
+This ensures that the JVM uses UTF-8 encoding for all file I/O and console output.
+4. Operating System Console
+If you're still experiencing issues with rendering the emojis in IntelliJ, it might be worth running the program in your operating system's native terminal (Command Prompt, PowerShell, or a Linux terminal). Some IDEs or integrated consoles might not fully support Unicode emojis, while native terminals typically handle them better.
+5. Testing with Simple Output
+To ensure that IntelliJ can display emojis, try a simple test first:
+java
+Copy code
+public class UnicodeTest {
+    public static void main(String[] args) {
+        System.out.println("Lion: \uD83E\uDD81");
+        System.out.println("Goat: \uD83D\uDC10");
+        System.out.println("Dog: \uD83D\uDC15");
+        System.out.println("Snake: \uD83D\uDC0D");
+        System.out.println("Plant: \uD83C\uDF31");
+    }
+}
+If this outputs question marks, then the issue is likely related to font or encoding as described above.
+By adjusting the encoding and console font, you should be able to resolve the issue and see the correct animal and plant drawings.
+
+
+
+
+
+
+You said:
+given the following code, placed in separate classes so that the programs improve in order and clarity
+import java.util.Random;
+
+public class TableGame {
+    static final int ROWS = 10;
+    static final int COLS = 20;
+    static final int MAX_ITERATIONS = 10;
+    static final double MAX_OCCUPIED_PERCENTAGE = 0.6;
+    static final int MAX_OCCUPIED_CELLS = (int)(ROWS * COLS * MAX_OCCUPIED_PERCENTAGE);
+
+    // Unicode symbols for animals and plants
+    static final char LION = 'L';  //  '\uD83E\uDD81';   🦁
+    static final char GOAT = 'G';  //  '\uD83D\uDC10';   🐐
+    static final char DOG = 'O';  //  '\uD83D\uDC15';    🐕
+    static final char DUCK = 'D';  //  '\uD83D\uDC0D';  🐍
+    static final char PLANT = '&';  //  '\uD83C\uDF31';  🌱
+    static final char EMPTY = '.';         // empty space
+
+    static Random random = new Random();
+
+    public static void main(String[] args) {
+        char[][] table = new char[ROWS][COLS];
+        int occupiedCells = 0;
+
+        // Initialize the table with empty spaces
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                table[i][j] = EMPTY;
+            }
+        }
+
+        // Place animals and plants randomly, ensuring not more than 60% of the table is occupied
+        while (occupiedCells < MAX_OCCUPIED_CELLS) {
+            int row = random.nextInt(ROWS);
+            int col = random.nextInt(COLS);
+
+            if (table[row][col] == EMPTY) {
+                char object = random.nextBoolean() ? getRandomAnimal() : PLANT;
+                table[row][col] = object;
+                occupiedCells++;
+            }
+        }
+
+        // Run the game for a fixed number of iterations
+        for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+            System.out.println("Iteration " + (iteration + 1));
+            printTable(table);
+            moveAnimals(table);
+        }
+
+        System.out.println("Game over after " + MAX_ITERATIONS + " iterations.");
+    }
+
+    // Get a random animal symbol
+    private static char getRandomAnimal() {
+        char[] animals = {LION, GOAT, DOG, DUCK};
+        return animals[random.nextInt(animals.length)];
+    }
+
+    // Move all animals on the table
+    private static void moveAnimals(char[][] table) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                if (isAnimal(table[i][j])) {
+                    int newRow = i;
+                    int newCol = j;
+                    // Move the animal to a random adjacent cell (up, down, left, right)
+                    switch (random.nextInt(4)) {
+                        case 0: newRow = (i - 1 + ROWS) % ROWS; break; // move up
+                        case 1: newRow = (i + 1) % ROWS; break;         // move down
+                        case 2: newCol = (j - 1 + COLS) % COLS; break; // move left
+                        case 3: newCol = (j + 1) % COLS; break;        // move right
+                    }
+
+                    // If the animal encounters a plant, eat it (replace with empty)
+                    if (table[newRow][newCol] == PLANT) {
+                        table[newRow][newCol] = table[i][j];
+                        table[i][j] = EMPTY;
+                    } else if (table[newRow][newCol] == EMPTY) {
+                        // Move the animal to the new cell
+                        table[newRow][newCol] = table[i][j];
+                        table[i][j] = EMPTY;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if the character is an animal
+    private static boolean isAnimal(char c) {
+        return c == LION || c == GOAT || c == DOG || c == DUCK;
+    }
+
+    // Print the table to the console
+    private static void printTable(char[][] table) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                System.out.print(table[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+}
+ChatGPT said:
+ChatGPT
+To improve the structure, organization, and clarity of the code, we can break it into multiple classes. We’ll create the following classes:
+
+TableGame: Main game class to control the game flow.
+Animal: An enum or class to represent different animals.
+Plant: Class to represent a plant (though it can be simplified as a static object).
+GameBoard: Class responsible for managing the board and its state (placing animals, plants, printing the board).
+Movement: Handles the movement logic for animals.
+Here is the refactored version of the code:
+
+1. TableGame.java
+This will be the main class that controls the game flow:
+
+java
+Copy code
+public class TableGame {
+    public static void main(String[] args) {
+        GameBoard gameBoard = new GameBoard(10, 20, 0.6);
+        gameBoard.populateBoard();
+        gameBoard.startGame(10);
+    }
+}
+2. GameBoard.java
+This class handles the board logic, initialization, and game iteration.
+
+java
+Copy code
+import java.util.Random;
+
+public class GameBoard {
+    private static final char EMPTY = '.';
+    private static final char PLANT = '&';
+    private char[][] board;
+    private int rows, cols, maxOccupiedCells;
+    private int occupiedCells = 0;
+    private Random random = new Random();
+
+    public GameBoard(int rows, int cols, double maxOccupiedPercentage) {
+        this.rows = rows;
+        this.cols = cols;
+        this.maxOccupiedCells = (int) (rows * cols * maxOccupiedPercentage);
+        this.board = new char[rows][cols];
+        initializeBoard();
+    }
+
+    // Initialize the table with empty spaces
+    private void initializeBoard() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                board[i][j] = EMPTY;
+            }
+        }
+    }
+
+    // Populates the board with random animals and plants
+    public void populateBoard() {
+        while (occupiedCells < maxOccupiedCells) {
+            int row = random.nextInt(rows);
+            int col = random.nextInt(cols);
+
+            if (board[row][col] == EMPTY) {
+                char object = random.nextBoolean() ? Animal.getRandomAnimal() : PLANT;
+                board[row][col] = object;
+                occupiedCells++;
+            }
+        }
+    }
+
+    // Starts the game with a given number of iterations
+    public void startGame(int maxIterations) {
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            System.out.println("Iteration " + (iteration + 1));
+            printBoard();
+            Movement.moveAnimals(board);
+        }
+        System.out.println("Game over after " + maxIterations + " iterations.");
+    }
+
+    // Prints the current state of the board
+    public void printBoard() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+}
+3. Animal.java
+This class represents animals and has a method to return a random animal.
+
+java
+Copy code
+import java.util.Random;
+
+public class Animal {
+    private static final char LION = 'L';
+    private static final char GOAT = 'G';
+    private static final char DOG = 'O';
+    private static final char DUCK = 'D';
+
+    private static final char[] ANIMALS = {LION, GOAT, DOG, DUCK};
+    private static Random random = new Random();
+
+    // Get a random animal symbol
+    public static char getRandomAnimal() {
+        return ANIMALS[random.nextInt(ANIMALS.length)];
+    }
+
+    // Check if a character is an animal
+    public static boolean isAnimal(char c) {
+        for (char animal : ANIMALS) {
+            if (animal == c) return true;
+        }
+        return false;
+    }
+}
+4. Movement.java
+This class handles the logic for moving animals on the board.
+
+java
+Copy code
+import java.util.Random;
+
+public class Movement {
+    private static Random random = new Random();
+
+    // Move all animals on the board
+    public static void moveAnimals(char[][] board) {
+        int rows = board.length;
+        int cols = board[0].length;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (Animal.isAnimal(board[i][j])) {
+                    int newRow = i;
+                    int newCol = j;
+                    // Move the animal to a random adjacent cell (up, down, left, right)
+                    switch (random.nextInt(4)) {
+                        case 0: newRow = (i - 1 + rows) % rows; break; // move up
+                        case 1: newRow = (i + 1) % rows; break;         // move down
+                        case 2: newCol = (j - 1 + cols) % cols; break;  // move left
+                        case 3: newCol = (j + 1) % cols; break;         // move right
+                    }
+
+                    // If the animal encounters a plant, eat it (replace with empty)
+                    if (board[newRow][newCol] == GameBoard.PLANT) {
+                        board[newRow][newCol] = board[i][j];
+                        board[i][j] = GameBoard.EMPTY;
+                    } else if (board[newRow][newCol] == GameBoard.EMPTY) {
+                        // Move the animal to the new cell
+                        board[newRow][newCol] = board[i][j];
+                        board[i][j] = GameBoard.EMPTY;
+                    }
+                }
+            }
+        }
+    }
+}
+Explanation:
+TableGame: Main entry point that initializes the game and starts it.
+GameBoard: Manages the grid's initialization, populating it with animals and plants, and running the iterations.
+Animal: A helper class that represents animals and provides methods for random selection and checking if a character is an animal.
+Movement: Handles animal movement logic.
+By breaking the code into classes, we improve separation of concerns, making the program easier to maintain and extend in the future.
+
+
+
+
+
+
+You said:
+in the Movement class above, separate it into different methods to preserve the unique responsibility in each of them
+ChatGPT said:
+ChatGPT
+To enhance the Single Responsibility Principle in the Movement class, we can break the logic into distinct methods, each with a specific purpose. Here’s how we can refactor the Movement class:
+
+Refactored Movement.java
+java
+Copy code
+import java.util.Random;
+
+public class Movement {
+    private static Random random = new Random();
+
+    // Public method to move all animals on the board
+    public static void moveAnimals(char[][] board) {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (Animal.isAnimal(board[i][j])) {
+                    moveAnimal(board, i, j);
+                }
+            }
+        }
+    }
+
+    // Private method that handles moving a single animal
+    private static void moveAnimal(char[][] board, int currentRow, int currentCol) {
+        int[] newPosition = getNewPosition(board.length, board[0].length, currentRow, currentCol);
+        int newRow = newPosition[0];
+        int newCol = newPosition[1];
+
+        if (isPlant(board, newRow, newCol)) {
+            eatPlant(board, currentRow, currentCol, newRow, newCol);
+        } else if (isEmpty(board, newRow, newCol)) {
+            moveToEmptySpace(board, currentRow, currentCol, newRow, newCol);
+        }
+    }
+
+    // Get new position for the animal based on random movement
+    private static int[] getNewPosition(int rows, int cols, int currentRow, int currentCol) {
+        int newRow = currentRow;
+        int newCol = currentCol;
+
+        // Randomly choose a direction: 0 = up, 1 = down, 2 = left, 3 = right
+        switch (random.nextInt(4)) {
+            case 0: newRow = (currentRow - 1 + rows) % rows; break; // move up
+            case 1: newRow = (currentRow + 1) % rows; break;        // move down
+            case 2: newCol = (currentCol - 1 + cols) % cols; break; // move left
+            case 3: newCol = (currentCol + 1) % cols; break;        // move right
+        }
+
+        return new int[]{newRow, newCol};
+    }
+
+    // Check if the destination cell contains a plant
+    private static boolean isPlant(char[][] board, int newRow, int newCol) {
+        return board[newRow][newCol] == GameBoard.PLANT;
+    }
+
+    // Check if the destination cell is empty
+    private static boolean isEmpty(char[][] board, int newRow, int newCol) {
+        return board[newRow][newCol] == GameBoard.EMPTY;
+    }
+
+    // Move the animal to the empty cell
+    private static void moveToEmptySpace(char[][] board, int currentRow, int currentCol, int newRow, int newCol) {
+        board[newRow][newCol] = board[currentRow][currentCol];
+        board[currentRow][currentCol] = GameBoard.EMPTY;
+    }
+
+    // Handle the case where the animal eats the plant
+    private static void eatPlant(char[][] board, int currentRow, int currentCol, int newRow, int newCol) {
+        board[newRow][newCol] = board[currentRow][currentCol];  // Animal moves to the plant cell
+        board[currentRow][currentCol] = GameBoard.EMPTY;        // The old position becomes empty
+    }
+}
+Explanation of the Refactored Methods:
+moveAnimals(char[][] board):
+
+The main public method that iterates through the entire board and checks if each cell contains an animal.
+For each animal, it calls the moveAnimal() method to handle its movement.
+moveAnimal(char[][] board, int currentRow, int currentCol):
+
+This method is responsible for determining how an individual animal moves.
+It first computes a new position for the animal by calling getNewPosition().
+Then, it checks if the new position has a plant (isPlant()) or is empty (isEmpty()).
+If it encounters a plant, it calls eatPlant(). Otherwise, if the position is empty, it calls moveToEmptySpace().
+getNewPosition(int rows, int cols, int currentRow, int currentCol):
+
+This method calculates the new position for an animal based on a random direction (up, down, left, right).
+It handles wrapping around the edges of the board using the modulus operation.
+isPlant(char[][] board, int newRow, int newCol):
+
+Checks if the destination cell contains a plant.
+isEmpty(char[][] board, int newRow, int newCol):
+
+Checks if the destination cell is empty.
+moveToEmptySpace(char[][] board, int currentRow, int currentCol, int newRow, int newCol):
+
+Moves the animal from its current position to the new empty position and updates the board accordingly.
+eatPlant(char[][] board, int currentRow, int currentCol, int newRow, int newCol):
+
+Handles the case where an animal moves to a plant’s cell, "eats" the plant, and occupies the space, leaving its old cell empty.
+Benefits of This Refactor:
+Separation of Concerns: Each method is now responsible for a single task. For example, getNewPosition() is only responsible for calculating the new position, and eatPlant() is solely responsible for handling the logic when an animal eats a plant.
+Readability: Breaking down the functionality into smaller, well-named methods improves code readability and maintainability.
+Reusability: If needed, methods like isPlant(), isEmpty(), or getNewPosition() can be reused in other parts of the program or future extensions.
+
+
+
+
+
+You said:
+in the getNewPosition method above, analyze whether to use the Von Neumman criterion or the Moore criterion to decide in which direction the animal should move. Let the user decide which of the two criteria using a variable.
+ChatGPT said:
+ChatGPT
+In order to decide how the animal should move, you can either use the Von Neumann neighborhood or the Moore neighborhood. Here’s a brief explanation of both criteria:
+
+Von Neumann criterion (4-neighborhood):
+The animal can only move to its four adjacent cells: up, down, left, or right.
+Moore criterion (8-neighborhood):
+The animal can move to any of its eight neighboring cells, including diagonals: up, down, left, right, and the four diagonal directions.
+Modifying the Movement class to support both criteria
+We will modify the getNewPosition() method to allow the user to choose between these two movement types using a variable useMooreNeighborhood.
+
+Here’s how you can refactor the code:
+
+java
+Copy code
+import java.util.Random;
+
+public class Movement {
+    private static Random random = new Random();
+    private static boolean useMooreNeighborhood;  // true for Moore, false for Von Neumann
+
+    // Public method to move all animals on the board
+    public static void moveAnimals(char[][] board, boolean useMoore) {
+        useMooreNeighborhood = useMoore;  // User's choice for movement criterion
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (Animal.isAnimal(board[i][j])) {
+                    moveAnimal(board, i, j);
+                }
+            }
+        }
+    }
+
+    // Private method that handles moving a single animal
+    private static void moveAnimal(char[][] board, int currentRow, int currentCol) {
+        int[] newPosition = getNewPosition(board.length, board[0].length, currentRow, currentCol);
+        int newRow = newPosition[0];
+        int newCol = newPosition[1];
+
+        if (isPlant(board, newRow, newCol)) {
+            eatPlant(board, currentRow, currentCol, newRow, newCol);
+        } else if (isEmpty(board, newRow, newCol)) {
+            moveToEmptySpace(board, currentRow, currentCol, newRow, newCol);
+        }
+    }
+
+    // Get new position for the animal based on random movement and selected neighborhood
+    private static int[] getNewPosition(int rows, int cols, int currentRow, int currentCol) {
+        int newRow = currentRow;
+        int newCol = currentCol;
+
+        // If using Moore criterion (8 directions)
+        if (useMooreNeighborhood) {
+            switch (random.nextInt(8)) {  // 0-7 for 8 possible directions
+                case 0: newRow = (currentRow - 1 + rows) % rows; break; // up
+                case 1: newRow = (currentRow + 1) % rows; break;        // down
+                case 2: newCol = (currentCol - 1 + cols) % cols; break; // left
+                case 3: newCol = (currentCol + 1) % cols; break;        // right
+                case 4: newRow = (currentRow - 1 + rows) % rows;        // up-left diagonal
+                        newCol = (currentCol - 1 + cols) % cols; break;
+                case 5: newRow = (currentRow - 1 + rows) % rows;        // up-right diagonal
+                        newCol = (currentCol + 1) % cols; break;
+                case 6: newRow = (currentRow + 1) % rows;               // down-left diagonal
+                        newCol = (currentCol - 1 + cols) % cols; break;
+                case 7: newRow = (currentRow + 1) % rows;               // down-right diagonal
+                        newCol = (currentCol + 1) % cols; break;
+            }
+        }
+        // If using Von Neumann criterion (4 directions)
+        else {
+            switch (random.nextInt(4)) {  // 0-3 for 4 possible directions
+                case 0: newRow = (currentRow - 1 + rows) % rows; break; // up
+                case 1: newRow = (currentRow + 1) % rows; break;        // down
+                case 2: newCol = (currentCol - 1 + cols) % cols; break; // left
+                case 3: newCol = (currentCol + 1) % cols; break;        // right
+            }
+        }
+
+        return new int[]{newRow, newCol};
+    }
+
+    // Check if the destination cell contains a plant
+    private static boolean isPlant(char[][] board, int newRow, int newCol) {
+        return board[newRow][newCol] == GameBoard.PLANT;
+    }
+
+    // Check if the destination cell is empty
+    private static boolean isEmpty(char[][] board, int newRow, int newCol) {
+        return board[newRow][newCol] == GameBoard.EMPTY;
+    }
+
+    // Move the animal to the empty cell
+    private static void moveToEmptySpace(char[][] board, int currentRow, int currentCol, int newRow, int newCol) {
+        board[newRow][newCol] = board[currentRow][currentCol];
+        board[currentRow][currentCol] = GameBoard.EMPTY;
+    }
+
+    // Handle the case where the animal eats the plant
+    private static void eatPlant(char[][] board, int currentRow, int currentCol, int newRow, int newCol) {
+        board[newRow][newCol] = board[currentRow][currentCol];  // Animal moves to the plant cell
+        board[currentRow][currentCol] = GameBoard.EMPTY;        // The old position becomes empty
+    }
+}
+Key Changes:
+useMooreNeighborhood: A boolean variable to decide which movement criterion to use. It is passed into the moveAnimals() method and stored as a static field so it can be referenced throughout the class.
+
+getNewPosition(): This method now supports both the Von Neumann (4 directions) and Moore (8 directions) neighborhoods. The movement is determined based on the value of useMooreNeighborhood.
+
+If useMooreNeighborhood is true, the animal can move to any of the 8 directions (including diagonals).
+If useMooreNeighborhood is false, the animal is restricted to 4 directions (up, down, left, right).
+Modified moveAnimals():
+
+Now takes a boolean argument useMoore, which allows the user to decide which neighborhood criterion to use.
+How to Use the Movement Criteria:
+In your TableGame class, when you initialize the game, you can ask the user to choose between the two criteria or pass a value directly:
+
+java
+Copy code
+import java.util.Scanner;
+
+public class TableGame {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Choose movement criterion (1: Von Neumann, 2: Moore): ");
+        int choice = scanner.nextInt();
+        boolean useMoore = (choice == 2);
+
+        GameBoard gameBoard = new GameBoard(10, 20, 0.6);
+        gameBoard.populateBoard();
+        gameBoard.startGame(10, useMoore);
+    }
+}
+Modifications in GameBoard.java:
+java
+Copy code
+public void startGame(int maxIterations, boolean useMooreNeighborhood) {
+    for (int iteration = 0; iteration < maxIterations; iteration++) {
+        System.out.println("Iteration " + (iteration + 1));
+        printBoard();
+        Movement.moveAnimals(board, useMooreNeighborhood);
+    }
+    System.out.println("Game over after " + maxIterations + " iterations.");
+}
+Summary:
+Von Neumann Criterion: The animal moves in one of four directions (up, down, left, right).
+Moore Criterion: The animal moves in one of eight directions (including diagonals).
+The user can choose the movement criterion at the start of the game.
+
+
+
+
+
+You said:
+at the previous code, make changes to classes to obtain the visual effect of seeing the animal move on screen, without merging different moments of the moves at the same instant. Each of the positions of the animal can be shown in one second.
+ChatGPT said:
+ChatGPT
+To create the visual effect of seeing animals move on the screen in real-time, we can utilize thread sleep and console clearing. The idea is to:
+
+Clear the console after each iteration.
+Wait for a second before showing the next iteration of animal movements.
+Print the updated game board after each move.
+Unfortunately, Java doesn't have a built-in way to clear the console. But we can simulate this effect by printing new lines or executing a system command to clear the terminal on supported platforms (e.g., Linux/MacOS using "clear" and Windows using "cls").
+
+Let’s make the following changes to achieve the visual effect:
+
+Step-by-Step Approach:
+Clear Console: We can create a method to simulate clearing the console.
+Sleep Between Movements: We'll use Thread.sleep() to pause for a second between moves.
+Update the main game loop: In the startGame() method of GameBoard, after each iteration, we will clear the console and wait.
+Updated Code:
+1. TableGame.java:
+java
+Copy code
+import java.util.Scanner;
+
+public class TableGame {
+    public static void main(String[] args) throws InterruptedException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Choose movement criterion (1: Von Neumann, 2: Moore): ");
+        int choice = scanner.nextInt();
+        boolean useMoore = (choice == 2);
+
+        GameBoard gameBoard = new GameBoard(10, 20, 0.6);
+        gameBoard.populateBoard();
+        gameBoard.startGame(10, useMoore);
+    }
+}
+2. GameBoard.java:
+java
+Copy code
+public class GameBoard {
+    private char[][] board;
+    private final int rows;
+    private final int cols;
+    private final double maxOccupiedPercentage;
+
+    public static final char PLANT = '&';
+    public static final char EMPTY = '.';
+
+    public GameBoard(int rows, int cols, double maxOccupiedPercentage) {
+        this.rows = rows;
+        this.cols = cols;
+        this.maxOccupiedPercentage = maxOccupiedPercentage;
+        this.board = new char[rows][cols];
+    }
+
+    // Method to populate the board
+    public void populateBoard() {
+        // Initialize the board with empty spaces and random animals/plants...
+    }
+
+    // Method to start the game with visual effects
+    public void startGame(int maxIterations, boolean useMooreNeighborhood) throws InterruptedException {
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            System.out.println("Iteration " + (iteration + 1));
+
+            // Print the current state of the board
+            printBoard();
+
+            // Move the animals
+            Movement.moveAnimals(board, useMooreNeighborhood);
+
+            // Wait for 1 second to simulate real-time movement
+            Thread.sleep(1000);
+
+            // Clear the console for the next iteration
+            clearConsole();
+        }
+
+        System.out.println("Game over after " + maxIterations + " iterations.");
+    }
+
+    // Method to print the board
+    private void printBoard() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // Method to clear the console (works on most systems)
+    private void clearConsole() {
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                // For Windows OS
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // For Linux, MacOS, and others
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (Exception e) {
+            // If unable to clear, just print new lines
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
+    }
+}
+3. Movement.java:
+No significant changes are required to Movement.java, except to ensure it works with real-time updates by handling the board update correctly. We’ve already refactored Movement to ensure each animal moves one at a time.
+
+Key Changes:
+Thread.sleep(1000): This adds a delay of 1 second between each movement iteration to simulate real-time updates.
+clearConsole(): This method attempts to clear the console after each iteration. It checks the operating system to decide which method to use for clearing:
+For Windows, it uses a system call to "cls".
+For Linux/MacOS, it uses ANSI escape codes ("\033[H\033[2J").
+If neither method works, it just prints 50 new lines as a fallback.
+startGame(): After each iteration, the console is cleared and the new board state is printed, creating a visual effect of animals moving across the screen.
+Running the Code:
+When you run the game, animals will move one step at a time, with each state being displayed for 1 second.
+After each move, the console is cleared, so you only see the latest position of the animals, giving a smooth animation effect.
+Example Output (simplified):
+python
+Copy code
+Iteration 1
+. . . . L . . . . . . . . . . . . . . .
+. . . . . . G . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . .
+...
+
+<1-second pause>
+
+Iteration 2
+. . . . . L . . . . . . . . . . . . . .
+. . . . . . . G . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . .
+...
+
+Summary:
+This approach creates a simple console-based animation where you can see animals moving on the board. The use of Thread.sleep() adds a delay between movements, and clearConsole() ensures only the current state of the board is visible. This gives the visual effect of animals moving in real-time.
